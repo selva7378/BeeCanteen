@@ -1,7 +1,6 @@
 package com.example.beecanteen.presentation.designsystem
 
 import android.R.attr.description
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,13 +25,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.beecanteen.domain.model.Beverages
-import com.example.beecanteen.domain.model.Categories
+import com.example.beecanteen.domain.model.user.Beverages
+import com.example.beecanteen.domain.model.user.Categories
 import com.example.beecanteen.presentation.ui.theme.BeeCanteenTheme
 
 
@@ -154,7 +152,6 @@ fun voteCard(
 @Composable
 fun RadioGroup(
     options: List<String>,
-    voteCount: Int,
     selectedOption: String,
     onOptionSelected: (String) -> Unit
 ) {
@@ -175,7 +172,7 @@ fun RadioGroup(
                     onClick = null
                 )
                 Text(text = option, modifier = Modifier.padding(start = 8.dp))
-                VoteCountBadge(voteCount)
+                VoteCountBadge(totalVoteCount)
             }
         }
     }

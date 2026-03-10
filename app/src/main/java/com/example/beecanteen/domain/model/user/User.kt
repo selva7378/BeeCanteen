@@ -1,4 +1,4 @@
-package com.example.beecanteen.domain.model
+package com.example.beecanteen.domain.model.user
 
 data class User(
     val id: String,

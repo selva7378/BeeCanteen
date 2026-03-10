@@ -1,15 +1,51 @@
 package com.example.beecanteen.domain
 
-import com.example.beecanteen.domain.model.Beverages
-import com.example.beecanteen.domain.model.Categories
+import com.example.beecanteen.domain.model.user.Beverages
+import com.example.beecanteen.domain.model.user.Categories
 
 val categories = listOf(
-    Categories(id = "cat_1", name = "Hot Drinks"),
-    Categories(id = "cat_2", name = "Cold Drinks"),
-    Categories(id = "cat_3", name = "Juices"),
-    Categories(id = "cat_4", name = "Smoothies"),
-    Categories(id = "cat_5", name = "Sodas"),
-    Categories(id = "cat_6", name = "Alcoholic")
+    Categories(
+        id = "cat_1",
+        name = "Hot Drinks",
+        icon = "arrow",
+        startTime = 0,
+        endTime = 0
+    ),
+    Categories(
+        id = "cat_2",
+        name = "Cold Drinks",
+        icon = "arrow",
+        startTime = 0,
+        endTime = 0
+    ),
+    Categories(
+        id = "cat_3",
+        name = "Juices",
+        icon = "arrow",
+        startTime = 0,
+        endTime = 0
+    ),
+    Categories(
+        id = "cat_4",
+        name = "Smoothies",
+        icon = "arrow",
+        startTime = 0,
+        endTime = 0
+    ),
+    Categories(
+        id = "cat_5",
+        name = "Sodas",
+        icon = "arrow",
+        startTime = 0,
+        endTime = 0
+    ),
+    Categories(
+        id = "cat_6",
+        name = "Alcoholic",
+        icon = "arrow",
+        startTime = 0,
+        endTime = 0
+    )
 )
 
 val beverages = listOf(
