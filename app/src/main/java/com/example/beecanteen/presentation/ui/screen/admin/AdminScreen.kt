@@ -30,11 +30,25 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.beecanteen.presentation.ui.theme.BeeCanteenTheme
 
 @Composable
 fun AdminScreen(
-    viewModel: AdminViewModel
+    viewModel: AdminViewModel = hiltViewModel()
+) {
+    AdminScreenContent(
+        onCreateCategory = { category, options ->
+            viewModel.createCategory(category, options)
+        }
+    )
+}
+
+@Composable
+fun AdminScreenContent(
+    onCreateCategory: (String, List<String>) -> Unit
 ) {
 
     var showDialog by rememberSaveable { mutableStateOf(false) }
@@ -56,7 +70,7 @@ fun AdminScreen(
             AddCategoryDialog(
                 onDismiss = { showDialog = false },
                 onSave = { category, options ->
-                    viewModel.createCategory(category, options)
+                    onCreateCategory(category, options)
                     showDialog = false
                 }
             )
@@ -159,4 +173,25 @@ fun AddCategoryDialog(
             }
         }
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AdminScreenPreview() {
+    BeeCanteenTheme {
+        AdminScreenContent(
+            onCreateCategory = { _, _ -> }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AddCategoryDialogPreview() {
+    BeeCanteenTheme {
+        AddCategoryDialog(
+            onDismiss = {},
+            onSave = { _, _ -> }
+        )
+    }
 }

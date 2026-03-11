@@ -1,5 +1,6 @@
 package com.example.beecanteen.presentation.designsystem
 
+import android.widget.Space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -91,11 +93,17 @@ fun RoleCard(
             Text(
                 text = description,
                 textAlign = TextAlign.Center
-                )
+            )
 
             Spacer(Modifier.height(12.dp))
 
-            CanteenButton(actionLabel, onClick = onActionClick)
+            CanteenButton(
+                text = actionLabel,
+                onClick = onActionClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+            )
         }
     }
 }
@@ -122,7 +130,7 @@ fun VoteCard(
 
             Text(
                 text = category.name,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleLarge
             )
 
             Spacer(Modifier.height(16.dp))
@@ -164,26 +172,27 @@ fun BeverageVoteRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        Text(
-            text = beverage.name,
-            modifier = Modifier.weight(1f)
+        CategoryChip(
+            label = beverage.name,
         )
+
+        Spacer(Modifier.weight(1f))
+
 
         VoteCountBadge(beverage.voteCount)
 
         Spacer(Modifier.width(8.dp))
 
-        Button(
+        CanteenButton(
+            text = "Vote",
             enabled = !voteDisabled,
             onClick = onVoteClick
-        ) {
-            Text("Vote")
-        }
+        )
     }
 }
 
 
-@Preview(showBackground =  true)
+@Preview(showBackground = true)
 @Composable
 fun RoleCardPreview() {
     BeeCanteenTheme {

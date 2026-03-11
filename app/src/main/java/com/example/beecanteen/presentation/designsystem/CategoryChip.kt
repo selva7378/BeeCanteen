@@ -22,7 +22,7 @@ fun CategoryChip(label: String, modifier: Modifier = Modifier) {
         Text(
             text = label,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.labelSmall,
+            style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSecondaryContainer
         )
     }

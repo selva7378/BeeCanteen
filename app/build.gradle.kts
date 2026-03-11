@@ -4,6 +4,7 @@ plugins {
     id("com.google.gms.google-services")
     alias(libs.plugins.hilt.android.gradle.plugin)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -60,10 +61,17 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation("androidx.compose.material:material-icons-extended:1.7.7")
+    // Compose Navigation
+    implementation("androidx.navigation:navigation-compose:2.8.8")
+    // Kotlin Serialization for type-safe routes
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    // Material 3 Adaptive Navigation
+    implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.3.1")
 
     implementation(platform("com.google.firebase:firebase-bom:34.10.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+    implementation("com.google.firebase:firebase-auth")
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
