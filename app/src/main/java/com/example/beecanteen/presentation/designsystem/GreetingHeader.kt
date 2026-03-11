@@ -11,8 +11,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.beecanteen.presentation.ui.theme.BeeCanteenTheme
 
 // ui/components/GreetingHeader.kt
 @Composable
@@ -41,6 +43,17 @@ fun GreetingHeader(
             text = "Vote for today's menu • $date",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f)
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GreetingHeaderPreview() {
+    BeeCanteenTheme {
+        GreetingHeader(
+            name = "Alex",
+            date = "March 10"
         )
     }
 }
