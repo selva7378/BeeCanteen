@@ -21,11 +21,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             BeeCanteenTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     AppNavGraph(
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier
                     )
-                }
             }
         }
     }

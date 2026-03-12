@@ -6,10 +6,12 @@ import com.example.beecanteen.domain.model.user.User
 import com.example.beecanteen.domain.repository.AuthRepository
 import com.example.beecanteen.domain.repository.AuthResult
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.actionCodeSettings
 import com.google.firebase.auth.auth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -22,7 +24,7 @@ class AuthViewModel @Inject constructor(
     private val _authState =
         MutableStateFlow<AuthResult<User>?>(null)
 
-    val authState = _authState
+    val authState = _authState.asStateFlow()
 
     fun login(email: String, password: String) {
 
@@ -30,6 +32,12 @@ class AuthViewModel @Inject constructor(
 
             _authState.value =
                 repository.login(email, password)
+        }
+    }
+
+    fun getCurrentUser() {
+        viewModelScope.launch {
+            _authState.value = repository.getCurrentUser()
         }
     }
 
