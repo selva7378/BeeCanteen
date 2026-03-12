@@ -33,12 +33,12 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun register(email: String, password: String) {
+    fun register(name: String, email: String, password: String) {
 
         viewModelScope.launch {
 
             _authState.value =
-                repository.register(email, password)
+                repository.register(name , email, password)
         }
     }
 
