@@ -25,7 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.beecanteen.domain.model.user.User
-import com.example.beecanteen.domain.repository.AuthResult
+import com.example.beecanteen.domain.repository.authentication.AuthResult
 import com.example.beecanteen.presentation.ui.theme.BeeCanteenTheme
 
 

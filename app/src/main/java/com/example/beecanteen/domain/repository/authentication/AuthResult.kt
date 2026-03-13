@@ -1,4 +1,4 @@
-package com.example.beecanteen.domain.repository
+package com.example.beecanteen.domain.repository.authentication
 
 sealed class AuthResult<out T> {
 

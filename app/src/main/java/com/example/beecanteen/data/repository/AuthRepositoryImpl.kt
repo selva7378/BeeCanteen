@@ -1,8 +1,8 @@
 package com.example.beecanteen.data.repository
 
 import com.example.beecanteen.domain.model.user.User
-import com.example.beecanteen.domain.repository.AuthRepository
-import com.example.beecanteen.domain.repository.AuthResult
+import com.example.beecanteen.domain.repository.authentication.AuthRepository
+import com.example.beecanteen.domain.repository.authentication.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await

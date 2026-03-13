@@ -13,7 +13,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.beecanteen.domain.repository.AuthResult
+import com.example.beecanteen.domain.repository.authentication.AuthResult
 import com.example.beecanteen.presentation.ui.screen.MainScreen
 import com.example.beecanteen.presentation.ui.screen.authentication.AuthViewModel
 import com.example.beecanteen.presentation.ui.screen.authentication.LoginScreen
@@ -28,6 +28,8 @@ import kotlinx.serialization.Serializable
 // Bottom Nav Routes (Inside Main Flow)
 @Serializable object UserRoute
 @Serializable object AdminRoute
+
+@Serializable object AddCategoryRoute
 
 @Composable
 fun AppNavGraph(

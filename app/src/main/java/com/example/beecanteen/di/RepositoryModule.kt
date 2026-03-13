@@ -1,7 +1,7 @@
 package com.example.beecanteen.di
 
-import com.example.beecanteen.data.repository.BeeCanteenRepositoryImpl
-import com.example.beecanteen.domain.repository.BeeCanteenRepository
+import com.example.beecanteen.data.repository.AdminRepositoryImpl
+import com.example.beecanteen.domain.repository.admin.AdminRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
@@ -15,8 +15,8 @@ object RepositoryModule {
     @Provides
     fun provideVotingRepository(
         firestore: FirebaseFirestore
-    ): BeeCanteenRepository {
+    ): AdminRepository {
 
-        return BeeCanteenRepositoryImpl(firestore)
+        return AdminRepositoryImpl(firestore)
     }
 }

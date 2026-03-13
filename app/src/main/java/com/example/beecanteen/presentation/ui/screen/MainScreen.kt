@@ -1,10 +1,10 @@
 package com.example.beecanteen.presentation.ui.screen
 
+import AddCategoryRoute
 import AdminRoute
 import UserRoute
 import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdminPanelSettings
@@ -19,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.currentWindowSize
@@ -29,7 +28,6 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -45,6 +43,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.beecanteen.presentation.ui.screen.admin.addcatagory.AddCategoryScreen
 import com.example.beecanteen.presentation.ui.screen.admin.AdminScreen
 import com.example.beecanteen.presentation.ui.screen.voting.VotingScreen
 import com.example.beecanteen.presentation.ui.theme.BeeCanteenTheme
@@ -148,7 +147,6 @@ fun MainScreen(
                     icon = { Icon(Icons.Default.AdminPanelSettings, contentDescription = "Admin") },
                     label = { Text("Admin") },
                     onClick = {
-                        // 3. Use the passed-in boolean
                         if (isAdmin) {
                             bottomNavController.navigate(AdminRoute) {
                                 popUpTo(bottomNavController.graph.findStartDestination().id) {
@@ -176,7 +174,19 @@ fun MainScreen(
                     )
                 }
                 composable<AdminRoute> {
-                    AdminScreen()
+                    AdminScreen(
+                        onClickFloat = {
+                            bottomNavController.navigate(AddCategoryRoute)
+                        }
+                    )
+                }
+                composable<AddCategoryRoute> {
+                    AddCategoryScreen(
+                        onNavigateBack = {
+                            bottomNavController.popBackStack()
+                        },
+                        modifier = Modifier
+                    )
                 }
             }
         }

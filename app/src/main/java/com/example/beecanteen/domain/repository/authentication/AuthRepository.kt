@@ -1,6 +1,7 @@
-package com.example.beecanteen.domain.repository
+package com.example.beecanteen.domain.repository.authentication
 
 import com.example.beecanteen.domain.model.user.User
+import com.example.beecanteen.domain.repository.authentication.AuthResult
 
 interface AuthRepository {
 

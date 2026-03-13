@@ -1,4 +1,4 @@
-package com.example.beecanteen.presentation.ui.screen.admin
+package com.example.beecanteen.presentation.ui.screen.admin.addcatagory
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,17 +9,17 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AdminViewModel @Inject constructor(
+class AddCatagoryViewModel @Inject constructor(
     private val repository: AdminRepository
 ) : ViewModel() {
 
     fun createCategory(
-        catagory: CategoryDto,
+        category: CategoryDto,
         options: List<String>
     ) {
 
         viewModelScope.launch {
-            repository.createCategory(catagory, options)
+            repository.createCategory(category, options)
         }
     }
 }

@@ -3,8 +3,8 @@ package com.example.beecanteen.presentation.ui.screen.authentication
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.beecanteen.domain.model.user.User
-import com.example.beecanteen.domain.repository.AuthRepository
-import com.example.beecanteen.domain.repository.AuthResult
+import com.example.beecanteen.domain.repository.authentication.AuthRepository
+import com.example.beecanteen.domain.repository.authentication.AuthResult
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.actionCodeSettings

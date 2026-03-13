@@ -33,165 +33,49 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.beecanteen.presentation.ui.theme.BeeCanteenTheme
 
 @Composable
 fun AdminScreen(
+    onClickFloat: () -> Unit,
     viewModel: AdminViewModel = hiltViewModel()
 ) {
     AdminScreenContent(
-        onCreateCategory = { category, options ->
-            viewModel.createCategory(category, options)
-        }
+        onClickFloat = onClickFloat,
     )
 }
 
 @Composable
 fun AdminScreenContent(
-    onCreateCategory: (String, List<String>) -> Unit
+    onClickFloat: () -> Unit,
 ) {
 
-    var showDialog by rememberSaveable { mutableStateOf(false) }
 
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
 
         FloatingActionButton(
-            onClick = { showDialog = true },
+            onClick = { onClickFloat() },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)
         ) {
             Icon(Icons.Default.Add, contentDescription = null)
         }
-
-        if (showDialog) {
-            AddCategoryDialog(
-                onDismiss = { showDialog = false },
-                onSave = { category, options ->
-                    onCreateCategory(category, options)
-                    showDialog = false
-                }
-            )
-        }
     }
 }
 
-@Composable
-fun AddCategoryDialog(
-    onDismiss: () -> Unit,
-    onSave: (String, List<String>) -> Unit
-) {
-
-    var categoryName by rememberSaveable { mutableStateOf("") }
-    var optionText by rememberSaveable { mutableStateOf("") }
-    var options by rememberSaveable { mutableStateOf(listOf<String>()) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {},
-
-        text = {
-
-            Column {
-
-                Text("Create Category")
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                OutlinedTextField(
-                    value = categoryName,
-                    onValueChange = { categoryName = it },
-                    label = { Text("Category name") }
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row {
-
-                    OutlinedTextField(
-                        value = optionText,
-                        onValueChange = { optionText = it },
-                        label = { Text("Option") },
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Button(
-                        onClick = {
-                            if (optionText.isNotBlank()) {
-                                options = options + optionText
-                                optionText = ""
-                            }
-                        }
-                    ) {
-                        Text("Add")
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                LazyColumn {
-
-                    items(options) { option ->
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-
-                            Text(option)
-
-                            IconButton(
-                                onClick = {
-                                    options = options - option
-                                }
-                            ) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = null
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Button(
-                    onClick = {
-                        onSave(categoryName, options)
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Save Category")
-                }
-            }
-        }
-    )
-}
 
 @Preview(showBackground = true)
 @Composable
 fun AdminScreenPreview() {
     BeeCanteenTheme {
         AdminScreenContent(
-            onCreateCategory = { _, _ -> }
+            onClickFloat = {}
         )
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun AddCategoryDialogPreview() {
-    BeeCanteenTheme {
-        AddCategoryDialog(
-            onDismiss = {},
-            onSave = { _, _ -> }
-        )
-    }
-}
+
