@@ -31,7 +31,7 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit,
     onNavigateToRegister: () -> Unit,
     modifier: Modifier = Modifier,
-    authViewModel: AuthViewModel = hiltViewModel()
+    authViewModel: AuthViewModel,
 ) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -182,6 +182,7 @@ fun LoginScreenPreview() {
         LoginScreen(
             onLoginSuccess = { } ,
             onNavigateToRegister = { },
+            authViewModel = hiltViewModel()
         )
     }
 }

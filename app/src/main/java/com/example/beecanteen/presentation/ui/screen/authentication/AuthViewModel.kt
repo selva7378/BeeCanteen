@@ -54,6 +54,7 @@ class AuthViewModel @Inject constructor(
 
         viewModelScope.launch {
             repository.logout()
+            _authState.value = null
         }
     }
 }

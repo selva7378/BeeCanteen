@@ -41,7 +41,7 @@ fun AppNavGraph(
         authViewModel.getCurrentUser()
     }
 
-    if (authState == null || authState is AuthResult.Loading) {
+    if (authState is AuthResult.Loading) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -61,6 +61,7 @@ fun AppNavGraph(
         // 1. Login Destination
         composable<LoginRoute> {
             LoginScreen(
+                authViewModel = authViewModel,
                 onLoginSuccess = {
                     rootNavController.navigate(MainFlowRoute) {
                         popUpTo(LoginRoute) { inclusive = true }
@@ -90,7 +91,7 @@ fun AppNavGraph(
             val currentUser = (authState as? AuthResult.Success)?.data
             val isAdmin = currentUser?.role?.trim() == "admin"
 
-            Log.i("AppNavGraph", "admin role ${currentUser?.role}")
+            Log.i("AppNavGraph", "role ${currentUser?.role}")
 
             MainScreen(
                 name = currentUser?.name ?: "user",
