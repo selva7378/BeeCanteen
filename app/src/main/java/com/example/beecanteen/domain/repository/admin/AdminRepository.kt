@@ -7,5 +7,7 @@ interface AdminRepository {
     suspend fun createCategory(category: CategoryDto, options: List<String>)
 
     // Update the return type to our new wrapper class
-    suspend fun getCategoriesWithOptions(): List<CategoryPoll>
+    suspend fun getCategoriesWithOptions(): AdminResult<List<CategoryPoll>>
+
+    suspend fun deleteCategory(categoryId: String): AdminResult<Unit>
 }

@@ -4,5 +4,6 @@ data class CategoryDto(
     val id: String = "",
     val title: String = "",
     val startTime: Long = 0L,
-    val endTime: Long = 0L
+    val endTime: Long = 0L,
+    val totalVotes: Int = 0
 )

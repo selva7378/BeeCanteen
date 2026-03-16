@@ -1,6 +1,5 @@
 package com.example.beecanteen.presentation.designsystem
 
-import android.widget.Space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,8 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdminPanelSettings
@@ -21,7 +18,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,15 +27,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.modifier.modifierLocalConsumer
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.beecanteen.domain.beverages
+import com.example.beecanteen.domain.optionDtos
 import com.example.beecanteen.domain.categories
-import com.example.beecanteen.domain.model.user.Beverage
-import com.example.beecanteen.domain.model.user.Category
+import com.example.beecanteen.domain.model.admin.CategoryDto
+import com.example.beecanteen.domain.model.admin.OptionDto
 import com.example.beecanteen.presentation.ui.theme.BeeCanteenTheme
 
 
@@ -110,8 +104,8 @@ fun RoleCard(
 
 @Composable
 fun VoteCard(
-    category: Category,
-    beverages: List<Beverage>,
+    categoryDto: CategoryDto,
+    optionDtos: List<OptionDto>,
     selectedVote: String?,
     onVote: (String) -> Unit,
     onCancelVote: () -> Unit
@@ -129,16 +123,16 @@ fun VoteCard(
         ) {
 
             Text(
-                text = category.name,
+                text = categoryDto.title,
                 style = MaterialTheme.typography.titleLarge
             )
 
             Spacer(Modifier.height(16.dp))
 
-            beverages.forEach { beverage ->
+            optionDtos.forEach { beverage ->
 
                 BeverageVoteRow(
-                    beverage = beverage,
+                    optionDto = beverage,
                     isSelected = beverage.id == selectedVote,
                     voteDisabled = selectedVote != null,
                     onVoteClick = { onVote(beverage.id) }
@@ -161,7 +155,7 @@ fun VoteCard(
 
 @Composable
 fun BeverageVoteRow(
-    beverage: Beverage,
+    optionDto: OptionDto,
     isSelected: Boolean,
     voteDisabled: Boolean,
     onVoteClick: () -> Unit
@@ -173,13 +167,13 @@ fun BeverageVoteRow(
     ) {
 
         CategoryChip(
-            label = beverage.name,
+            label = optionDto.name,
         )
 
         Spacer(Modifier.weight(1f))
 
 
-        VoteCountBadge(beverage.voteCount)
+        VoteCountBadge(1)
 
         Spacer(Modifier.width(8.dp))
 
@@ -212,8 +206,8 @@ fun VoteCardPreview() {
     BeeCanteenTheme {
         var selectedVote by remember { mutableStateOf<String?>(null) }
         VoteCard(
-            category = categories[0],
-            beverages = beverages,
+            categoryDto = categories[0],
+            optionDtos = optionDtos,
             selectedVote = selectedVote,
             onVote = { beverageId ->
 

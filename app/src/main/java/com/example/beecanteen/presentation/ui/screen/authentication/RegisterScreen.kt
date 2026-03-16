@@ -23,9 +23,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.beecanteen.domain.model.user.User
-import com.example.beecanteen.domain.repository.authentication.AuthResult
+import com.example.beecanteen.domain.repository.authentication.Result
 import com.example.beecanteen.presentation.ui.theme.BeeCanteenTheme
 
 
@@ -51,7 +50,7 @@ fun RegisterScreen(
 
 @Composable
 fun RegisterScreenContent(
-    authState: AuthResult<User>?,
+    authState: Result<User>?,
     onRegisterClick: (String, String, String) -> Unit,
     onRegisterSuccess: () -> Unit,
     onNavigateToLogin: () -> Unit,
@@ -67,15 +66,15 @@ fun RegisterScreenContent(
     var confirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val isLoading = authState is AuthResult.Loading
+    val isLoading = authState is Result.Loading
 
     LaunchedEffect(authState) {
         when (authState) {
-            is AuthResult.Success -> {
+            is Result.Success -> {
                 Toast.makeText(context, "Registration successful", Toast.LENGTH_SHORT).show()
                 onRegisterSuccess()
             }
-            is AuthResult.Error -> {
+            is Result.Error -> {
                 Toast.makeText(
                     context,
                     authState.message,

@@ -23,7 +23,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.beecanteen.domain.repository.authentication.AuthResult
+import com.example.beecanteen.domain.repository.authentication.Result
 import com.example.beecanteen.presentation.ui.theme.BeeCanteenTheme
 
 @Composable
@@ -39,18 +39,18 @@ fun LoginScreen(
 
     val context = LocalContext.current
     val authState by authViewModel.authState.collectAsState()
-    val isLoading = authState is AuthResult.Loading
+    val isLoading = authState is Result.Loading
 
     LaunchedEffect(authState) {
         when (authState) {
-            is AuthResult.Success -> {
+            is Result.Success -> {
                 Toast.makeText(context, "Login success", Toast.LENGTH_SHORT).show()
                 onLoginSuccess()
             }
-            is AuthResult.Error -> {
+            is Result.Error -> {
                 Toast.makeText(
                     context,
-                    (authState as AuthResult.Error).message,
+                    (authState as Result.Error).message,
                     Toast.LENGTH_LONG
                 ).show()
             }

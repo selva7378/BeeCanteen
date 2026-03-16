@@ -1,60 +1,60 @@
 package com.example.beecanteen.domain
 
-import com.example.beecanteen.domain.model.user.Beverage
-import com.example.beecanteen.domain.model.user.Category
+import com.example.beecanteen.domain.model.admin.CategoryDto
+import com.example.beecanteen.domain.model.admin.OptionDto
 
 val categories = listOf(
-    Category(
+    CategoryDto(
         id = "cat_1",
-        name = "Hot Drinks",
+        title = "Hot Drinks",
         startTime = 0,
         endTime = 0,
-        totalVoteCount = 0,
+        totalVotes = 0,
     ),
-    Category(
+    CategoryDto(
         id = "cat_2",
-        name = "Cold Drinks",
+        title = "Cold Drinks",
         startTime = 0,
         endTime = 0,
-        totalVoteCount = 0,
+        totalVotes = 0,
     ),
-    Category(
+    CategoryDto(
         id = "cat_3",
-        name = "Juices",
+        title = "Juices",
         startTime = 0,
         endTime = 0,
-        totalVoteCount = 0,
+        totalVotes = 0,
     ),
-    Category(
+    CategoryDto(
         id = "cat_4",
-        name = "Smoothies",
+        title = "Smoothies",
         startTime = 0,
         endTime = 0,
-        totalVoteCount = 0,
+        totalVotes = 0,
     ),
-    Category(
+    CategoryDto(
         id = "cat_5",
-        name = "Sodas",
+        title = "Sodas",
         startTime = 0,
         endTime = 0,
-        totalVoteCount = 0,
+        totalVotes = 0,
     ),
-    Category(
+    CategoryDto(
         id = "cat_6",
-        name = "Alcoholic",
+        title = "Alcoholic",
         startTime = 0,
         endTime = 0,
-        totalVoteCount = 0,
+        totalVotes = 0,
     )
 )
 
-val beverages = listOf(
+val optionDtos = listOf(
     // Hot Drinks
-    Beverage(id = "bev_1", name = "Espresso", voteCount = 0),
-    Beverage(id = "bev_2", name = "Cappuccino", voteCount = 0),
-    Beverage(id = "bev_3", name = "Latte", voteCount = 0),
-    Beverage(id = "bev_4", name = "Chai Tea", voteCount = 0),
-    Beverage(id = "bev_5", name = "Hot Chocolate", voteCount = 0),
+    OptionDto(id = "bev_1", name = "Espresso"),
+    OptionDto(id = "bev_2", name = "Cappuccino"),
+    OptionDto(id = "bev_3", name = "Latte"),
+    OptionDto(id = "bev_4", name = "Chai Tea"),
+    OptionDto(id = "bev_5", name = "Hot Chocolate"),
     // Cold Drinks
 //    Beverage(id = "bev_6", name = "Iced Coffee"),
 //    Beverage(id = "bev_7", name = "Cold Brew"),

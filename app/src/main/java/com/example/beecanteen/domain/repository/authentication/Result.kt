@@ -1,14 +1,14 @@
 package com.example.beecanteen.domain.repository.authentication
 
-sealed class AuthResult<out T> {
+sealed class Result<out T> {
 
     data class Success<out T>(
         val data: T
-    ) : AuthResult<T>()
+    ) : Result<T>()
 
     data class Error(
         val message: String
-    ) : AuthResult<Nothing>()
+    ) : Result<Nothing>()
 
-    object Loading : AuthResult<Nothing>()
+    object Loading : Result<Nothing>()
 }

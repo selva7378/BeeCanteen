@@ -1,4 +1,3 @@
-import android.R.attr.name
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +12,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.beecanteen.domain.repository.authentication.AuthResult
+import com.example.beecanteen.domain.repository.authentication.Result
 import com.example.beecanteen.presentation.ui.screen.MainScreen
 import com.example.beecanteen.presentation.ui.screen.authentication.AuthViewModel
 import com.example.beecanteen.presentation.ui.screen.authentication.LoginScreen
@@ -43,7 +42,7 @@ fun AppNavGraph(
         authViewModel.getCurrentUser()
     }
 
-    if (authState is AuthResult.Loading) {
+    if (authState is Result.Loading) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -55,7 +54,7 @@ fun AppNavGraph(
 
     NavHost(
         navController = rootNavController,
-        startDestination = if (authState is AuthResult.Success) MainFlowRoute else LoginRoute,
+        startDestination = if (authState is Result.Success) MainFlowRoute else LoginRoute,
 //        startDestination = LoginRoute,
         modifier = Modifier
     ) {
@@ -90,7 +89,7 @@ fun AppNavGraph(
         }
 
         composable<MainFlowRoute> {
-            val currentUser = (authState as? AuthResult.Success)?.data
+            val currentUser = (authState as? Result.Success)?.data
             val isAdmin = currentUser?.role?.trim() == "admin"
 
             Log.i("AppNavGraph", "role ${currentUser?.role}")
