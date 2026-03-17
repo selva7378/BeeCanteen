@@ -21,6 +21,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,12 +32,17 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,6 +58,7 @@ import java.util.Locale
 @Composable
 fun AdminScreen(
     onClickFloat: () -> Unit,
+    onPollClick: (String) -> Unit,
     viewModel: AdminViewModel = hiltViewModel()
 ) {
     val polls by viewModel.polls.collectAsState()
@@ -74,7 +84,9 @@ fun AdminScreen(
         isRefreshing = isRefreshing,
         onRefresh = { viewModel.fetchPolls() },
         onDeleteClick = { categoryId -> viewModel.deleteCategory(categoryId) },
-        onClickFloat = onClickFloat
+        onPollClick = onPollClick,
+        onClickFloat = onClickFloat,
+        onResetAllVotes = { viewModel.resetAllVotes() }
     )
 }
 
@@ -86,7 +98,38 @@ fun AdminScreenContent(
     onRefresh: () -> Unit,
     onDeleteClick: (String) -> Unit,
     onClickFloat: () -> Unit,
+    onPollClick: (String) -> Unit,
+    onResetAllVotes: () -> Unit // New callback
 ) {
+    // State to control the confirmation dialog
+    var showConfirmDialog by remember { mutableStateOf(false) }
+
+    // The Safety Confirmation Dialog
+    if (showConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            icon = { Icon(Icons.Default.Warning, contentDescription = "Warning") },
+            title = { Text("Reset All Votes?") },
+            text = { Text("This will permanently delete all votes for every category. This action cannot be undone.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showConfirmDialog = false
+                        onResetAllVotes()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete All")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -100,10 +143,39 @@ fun AdminScreenContent(
                 contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 80.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+
+                // 1. Add the Global Action Button at the very top of the list
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Manage Canteen",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        OutlinedButton(
+                            onClick = { showConfirmDialog = true }, // Opens the dialog instead of instantly deleting
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text("Reset All Votes")
+                        }
+                    }
+                }
+
+                // 2. The regular list of polls
                 items(polls) { poll ->
                     CategoryPollCard(
                         poll = poll,
-                        onDeleteClick = { onDeleteClick(poll.category.id) }
+                        onDeleteClick = { onDeleteClick(poll.category.id) },
+                        onPollClick = { onPollClick(poll.category.id) }
                     )
                 }
             }
@@ -123,9 +195,11 @@ fun AdminScreenContent(
 @Composable
 fun CategoryPollCard(
     poll: CategoryPoll,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    onPollClick: () -> Unit
 ) {
     Card(
+        onClick = onPollClick,
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -217,7 +291,9 @@ fun AdminScreenPreview() {
             isRefreshing = false,
             onRefresh = {},
             onDeleteClick = {},
-            onClickFloat = {}
+            onClickFloat = {},
+            onPollClick = {},
+            onResetAllVotes = {},
         )
     }
 }

@@ -1,6 +1,7 @@
 package com.example.beecanteen.presentation.ui.screen
 
 import AddCategoryRoute
+import AdminPollDetailRoute
 import AdminRoute
 import UserRoute
 import android.widget.Toast
@@ -43,6 +44,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import com.example.beecanteen.presentation.ui.screen.admin.AdminPollDetailScreen
 import com.example.beecanteen.presentation.ui.screen.admin.addcatagory.AddCategoryScreen
 import com.example.beecanteen.presentation.ui.screen.admin.AdminScreen
 import com.example.beecanteen.presentation.ui.screen.voting.VotingScreen
@@ -177,9 +180,22 @@ fun MainScreen(
                     AdminScreen(
                         onClickFloat = {
                             bottomNavController.navigate(AddCategoryRoute)
+                        },
+                        onPollClick = { categoryId ->
+                            bottomNavController.navigate(AdminPollDetailRoute(categoryId))
                         }
                     )
                 }
+
+                composable<AdminPollDetailRoute> { backStackEntry ->
+                    val route = backStackEntry.toRoute<AdminPollDetailRoute>()
+
+                    AdminPollDetailScreen(
+                        categoryId = route.categoryId,
+                        onNavigateBack = { bottomNavController.popBackStack() }
+                    )
+                }
+
                 composable<AddCategoryRoute> {
                     AddCategoryScreen(
                         onNavigateBack = {

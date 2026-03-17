@@ -37,10 +37,31 @@ class AdminViewModel @Inject constructor(
             _isRefreshing.value = true
 
             val result = repository.getCategoriesWithOptions()
+            if (result is AdminResult.Success) {
+                result.data.forEach { poll ->
+                    Log.d("VoteDebug", "Category: ${poll.category.title}, Total Votes Loaded: ${poll.allVotes.size}")
+                }
+            }
             _polls.value = result
 
             _isRefreshing.value = false
 
+        }
+    }
+
+    fun resetAllVotes() {
+        viewModelScope.launch {
+            _isRefreshing.value = true // Show the loading spinner
+
+            val result = repository.resetAllVotes()
+            if (result is AdminResult.Success) {
+                Log.i("AdminViewModel", "Successfully reset all votes.")
+            } else {
+                Log.e("AdminViewModel", "Failed to reset votes: ${(result as? AdminResult.Error)?.message}")
+            }
+
+            // Refresh the list to reflect the cleared votes
+            fetchPolls()
         }
     }
 

@@ -10,4 +10,6 @@ interface AdminRepository {
     suspend fun getCategoriesWithOptions(): AdminResult<List<CategoryPoll>>
 
     suspend fun deleteCategory(categoryId: String): AdminResult<Unit>
+
+    suspend fun resetAllVotes(): AdminResult<Unit>
 }

@@ -30,10 +30,20 @@ class VotingViewModel @Inject constructor(
     val pollsState: StateFlow<Result<List<CategoryPoll>>?> = _pollsState.asStateFlow()
 
     init {
-        // Start listening to the real-time flow immediately
         viewModelScope.launch {
             repository.getRealTimePolls().collect { result ->
-                _pollsState.value = result
+
+                // 1. Get current time in milliseconds since midnight
+                val currentMillis = getCurrentMillisSinceMidnight()
+
+                // 2. Map the Result object to filter the internal list
+                val filteredResult = result.map { pollsList ->
+                    pollsList.filter { poll ->
+                        currentMillis in poll.category.startTime..poll.category.endTime
+                    }
+                }
+
+                _pollsState.value = filteredResult
             }
         }
     }
@@ -63,5 +73,10 @@ class VotingViewModel @Inject constructor(
             .toLocalDateTime(TimeZone.currentSystemDefault())
             .date
             .format(fmt)
+    }
+
+    private fun getCurrentMillisSinceMidnight(): Long {
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time
+        return (now.hour * 3600000L) + (now.minute * 60000L) + (now.second * 1000L)
     }
 }

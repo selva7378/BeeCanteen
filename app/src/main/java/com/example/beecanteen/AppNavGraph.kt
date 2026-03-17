@@ -30,6 +30,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable object AddCategoryRoute
 
+@Serializable
+data class AdminPollDetailRoute(val categoryId: String)
 @Composable
 fun AppNavGraph(
     authViewModel: AuthViewModel = hiltViewModel(),

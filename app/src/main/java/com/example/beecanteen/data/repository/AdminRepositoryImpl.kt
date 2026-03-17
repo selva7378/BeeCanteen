@@ -3,6 +3,7 @@ package com.example.beecanteen.data.repository
 import com.example.beecanteen.domain.model.CategoryPoll
 import com.example.beecanteen.domain.model.admin.CategoryDto
 import com.example.beecanteen.domain.model.admin.OptionDto
+import com.example.beecanteen.domain.model.user.VoteDto
 import com.example.beecanteen.domain.repository.admin.AdminRepository
 import com.example.beecanteen.domain.repository.admin.AdminResult
 import com.google.firebase.firestore.FirebaseFirestore
@@ -67,16 +68,62 @@ class AdminRepositoryImpl(
                     optionDoc.toObject(OptionDto::class.java)
                 }
 
-                // Step 5: Bundle them together into our wrapper class!
+                // Step 5: Fetch the votes sub-collection for THIS category's ID
+                val votesSnapshot = firestore
+                    .collection("categories")
+                    .document(category.id)
+                    .collection("votes") // Assuming your sub-collection is named "votes"
+                    .get()
+                    .await()
+
+                // Step 6: Parse the votes documents into a list of VoteDto
+                val votesList = votesSnapshot.documents.mapNotNull { voteDoc ->
+                    voteDoc.toObject(VoteDto::class.java)
+                }
+
+                // Step 7: Bundle them together into our wrapper class!
                 CategoryPoll(
                     category = category,
-                    options = optionsList
+                    options = optionsList,
+                    allVotes = votesList
                 )
             }
 
             AdminResult.Success(polls)
         } catch (e: Exception) {
             AdminResult.Error(e.message ?: "failed to fetch catergory poll")
+        }
+    }
+
+    override suspend fun resetAllVotes(): AdminResult<Unit> {
+        return try {
+            // Step 1: Get all categories
+            val categoriesSnapshot = firestore.collection("categories").get().await()
+
+            // Step 2: Create a batch to group our delete operations
+            val batch = firestore.batch()
+
+            for (categoryDoc in categoriesSnapshot.documents) {
+                // Optional: If you maintain a totalVotes counter on the category document, reset it to 0
+                if (categoryDoc.contains("totalVotes")) {
+                    batch.update(categoryDoc.reference, "totalVotes", 0)
+                }
+
+                // Step 3: Fetch the votes subcollection for this specific category
+                val votesSnapshot = categoryDoc.reference.collection("votes").get().await()
+
+                // Step 4: Queue each vote document for deletion
+                for (voteDoc in votesSnapshot.documents) {
+                    batch.delete(voteDoc.reference)
+                }
+            }
+
+            // Step 5: Execute the batch delete all at once
+            batch.commit().await()
+
+            AdminResult.Success(Unit)
+        } catch (e: Exception) {
+            AdminResult.Error(e.message ?: "Failed to reset all votes")
         }
     }
 
