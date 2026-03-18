@@ -22,6 +22,7 @@ import com.example.beecanteen.domain.model.admin.CategoryDto
 import com.example.beecanteen.domain.model.admin.OptionDto
 import com.example.beecanteen.presentation.ui.theme.BeeCanteenTheme
 import java.util.Locale
+import com.example.beecanteen.domain.repository.authentication.Result
 
 @Composable
 fun VotingScreen(
@@ -44,9 +45,9 @@ fun VotingScreen(
                 }
             }
             else -> {
-                if (result.isSuccess) {
+                if (result is Result.Success) {
                     VotingScreenContent(
-                        polls = result.getOrNull() ?: emptyList(),
+                        polls = result.data ?: emptyList(),
                         onOptionSelected = { categoryId, optionId ->
                             viewModel.castVote(categoryId, optionId)
                         },
@@ -57,7 +58,7 @@ fun VotingScreen(
                 } else {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
-                            text = "Error loading polls: ${result.exceptionOrNull()?.message}",
+                            text = "Error loading polls: Ceck your internet",
                             color = MaterialTheme.colorScheme.error
                         )
                     }

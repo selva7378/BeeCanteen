@@ -1,7 +1,6 @@
 package com.example.beecanteen.di
 
-import com.example.beecanteen.data.repository.AuthRepositoryImpl
-import com.example.beecanteen.domain.repository.authentication.AuthRepository
+
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module

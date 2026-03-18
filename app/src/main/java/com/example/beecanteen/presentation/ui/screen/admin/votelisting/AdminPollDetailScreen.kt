@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.beecanteen.domain.repository.admin.AdminResult
+import com.example.beecanteen.domain.repository.authentication.Result
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,7 +31,7 @@ fun AdminPollDetailScreen(
     val isRefreshing by viewModel.isRefreshing.collectAsState() // 1. Observe the refreshing state
 
     // Find the specific poll from the loaded state
-    val poll = (pollsResult as? AdminResult.Success)?.data?.find { it.category.id == categoryId }
+    val poll = (pollsResult as? Result.Success)?.data?.find { it.category.id == categoryId }
     Log.i("AdminPollDetailScreen", "poll: ${poll?.category?.title}")
 
     if (poll == null) {

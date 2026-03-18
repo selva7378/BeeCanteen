@@ -11,12 +11,13 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.beecanteen.domain.repository.authentication.Result
+import com.example.beecanteen.domain.model.user.User
 import com.example.beecanteen.presentation.ui.screen.MainScreen
 import com.example.beecanteen.presentation.ui.screen.authentication.AuthViewModel
 import com.example.beecanteen.presentation.ui.screen.authentication.LoginScreen
 import com.example.beecanteen.presentation.ui.screen.authentication.RegisterScreen
 import kotlinx.serialization.Serializable
+import com.example.beecanteen.domain.repository.authentication.Result
 
 // Root Graph Routes
 @Serializable object LoginRoute
@@ -40,7 +41,7 @@ fun AppNavGraph(
     val authState by authViewModel.authState.collectAsState()
 
     when (val state = authState) {
-        null, is Result.Loading -> {
+        null, Result.Loading -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -51,7 +52,7 @@ fun AppNavGraph(
         else -> {
             NavHost(
                 navController = rootNavController,
-                startDestination = if (state is Result.Success) MainFlowRoute else LoginRoute,
+                startDestination = if (state is Result.Success<*>) MainFlowRoute else LoginRoute,
                 modifier = modifier
             ) {
 
@@ -84,7 +85,7 @@ fun AppNavGraph(
                 }
 
                 composable<MainFlowRoute> {
-                    val currentUser = (state as? Result.Success)?.data
+                    val currentUser = (state as? Result.Success<User>)?.data
                     val isAdmin = currentUser?.role?.trim() == "admin"
 
                     Log.i("AppNavGraph", "role ${currentUser?.role}")

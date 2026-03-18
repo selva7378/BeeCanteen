@@ -51,7 +51,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.beecanteen.domain.model.CategoryPoll
-import com.example.beecanteen.domain.repository.admin.AdminResult
+import com.example.beecanteen.domain.repository.authentication.Result
 import com.example.beecanteen.presentation.ui.theme.BeeCanteenTheme
 import java.util.Locale
 
@@ -69,7 +69,7 @@ fun AdminScreen(
     }
 
     val pollsList = when (val result = polls) {
-        is AdminResult.Success -> {
+        is Result.Success<List<CategoryPoll>> -> {
             Log.i("AdminScreen", "Success: ${result.data}")
             result.data
         }

@@ -5,7 +5,7 @@ import com.example.beecanteen.domain.model.admin.CategoryDto
 import com.example.beecanteen.domain.model.admin.OptionDto
 import com.example.beecanteen.domain.model.user.VoteDto
 import com.example.beecanteen.domain.repository.admin.AdminRepository
-import com.example.beecanteen.domain.repository.admin.AdminResult
+chanimport com.example.beecanteen.domain.repository.authentication.Result
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
@@ -39,7 +39,7 @@ class AdminRepositoryImpl(
     }
 
     // The new fetching logic
-    override suspend fun getCategoriesWithOptions(): AdminResult<List<CategoryPoll>> {
+    override suspend fun getCategoriesWithOptions(): Result<List<CategoryPoll>> {
 
         return try {
             // Step 1: Fetch ALL parent categories
@@ -89,13 +89,13 @@ class AdminRepositoryImpl(
                 )
             }
 
-            AdminResult.Success(polls)
+            Result.Success(polls)
         } catch (e: Exception) {
-            AdminResult.Error(e.message ?: "failed to fetch catergory poll")
+            Result.Error(e.message ?: "failed to fetch catergory poll")
         }
     }
 
-    override suspend fun resetAllVotes(): AdminResult<Unit> {
+    override suspend fun resetAllVotes(): Result<Unit> {
         return try {
             // Step 1: Get all categories
             val categoriesSnapshot = firestore.collection("categories").get().await()
@@ -121,13 +121,13 @@ class AdminRepositoryImpl(
             // Step 5: Execute the batch delete all at once
             batch.commit().await()
 
-            AdminResult.Success(Unit)
+            Result.Success(Unit)
         } catch (e: Exception) {
-            AdminResult.Error(e.message ?: "Failed to reset all votes")
+            Result.Error(e.message ?: "Failed to reset all votes")
         }
     }
 
-    override suspend fun deleteCategory(categoryId: String): AdminResult<Unit> {
+    override suspend fun deleteCategory(categoryId: String): Result<Unit> {
         return try {
             val categoryRef = firestore.collection("categories").document(categoryId)
 
@@ -142,9 +142,9 @@ class AdminRepositoryImpl(
             // Step 3: Now it is safe to delete the parent category document
             categoryRef.delete().await()
 
-            AdminResult.Success(Unit)
+            Result.Success(Unit)
         } catch (e: Exception) {
-            AdminResult.Error(e.message ?: "Failed to delete category")
+            Result.Error(e.message ?: "Failed to delete category")
         }
     }
 }

@@ -4,12 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.beecanteen.domain.model.user.User
 import com.example.beecanteen.domain.repository.authentication.AuthRepository
-import com.example.beecanteen.domain.repository.authentication.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.example.beecanteen.domain.repository.authentication.Result
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
@@ -61,7 +61,7 @@ class AuthViewModel @Inject constructor(
 
         viewModelScope.launch {
             repository.logout()
-            _authState.value = null
+            _authState.value = Result.Error("LOGED OUT")
         }
     }
 }

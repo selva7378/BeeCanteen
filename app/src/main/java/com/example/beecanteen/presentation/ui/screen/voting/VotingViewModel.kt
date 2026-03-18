@@ -19,12 +19,14 @@ import kotlinx.datetime.format.MonthNames
 import kotlinx.datetime.format.char
 import kotlinx.datetime.toLocalDateTime
 import javax.inject.Inject
+import com.example.beecanteen.domain.repository.authentication.Result
+import kotlin.map
 
 @HiltViewModel
 class VotingViewModel @Inject constructor(
     private val repository: VotingRepository,
     private val firebaseAuth: FirebaseAuth
-): ViewModel() {
+) : ViewModel() {
 
     private val _pollsState = MutableStateFlow<Result<List<CategoryPoll>>?>(null)
     val pollsState: StateFlow<Result<List<CategoryPoll>>?> = _pollsState.asStateFlow()
@@ -36,17 +38,25 @@ class VotingViewModel @Inject constructor(
                 // 1. Get current time in milliseconds since midnight
                 val currentMillis = getCurrentMillisSinceMidnight()
 
-                // 2. Map the Result object to filter the internal list
-                val filteredResult = result.map { pollsList ->
-                    pollsList.filter { poll ->
-                        currentMillis in poll.category.startTime..poll.category.endTime
+                // 2. Handle your custom Result class manually using a 'when' block
+                val filteredResult = when (result) {
+                    is Result.Success -> {
+                        // Extract the list, filter it, and wrap it in a new Success
+                        val filteredList = result.data.filter { poll ->
+                            currentMillis in poll.category.startTime..poll.category.endTime
+                        }
+                        Result.Success(filteredList)
                     }
+                    // If it's an Error or Loading, just pass it through exactly as it is
+                    is Result.Error -> result
+                    is Result.Loading -> result
                 }
 
                 _pollsState.value = filteredResult
             }
         }
     }
+
 
     fun castVote(categoryId: String, optionId: String) {
         val userId = firebaseAuth.currentUser?.uid ?: return

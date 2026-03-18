@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+import com.example.beecanteen.domain.repository.authentication.Result
 
 class VotingRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
@@ -26,7 +27,7 @@ class VotingRepositoryImpl @Inject constructor(
         val listener = firestore.collection("categories")
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    trySend(Result.failure(error))
+                    trySend(Result.Error(error.toString()))
                     return@addSnapshotListener
                 }
 
@@ -57,9 +58,9 @@ class VotingRepositoryImpl @Inject constructor(
                                     allVotes = emptyList() // Not needed for the user facing screen
                                 )
                             }
-                            trySend(Result.success(polls))
+                            trySend(Result.Success(polls))
                         } catch (e: Exception) {
-                            trySend(Result.failure(e))
+                            trySend(Result.Error(e.toString()))
                         }
                     }
                 }
@@ -110,10 +111,10 @@ class VotingRepositoryImpl @Inject constructor(
 
             }.await()
 
-            Result.success(Unit)
+            Result.Success(Unit)
 
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.Error(e.toString())
         }
     }
 
@@ -136,9 +137,9 @@ class VotingRepositoryImpl @Inject constructor(
                 }
             }.await()
 
-            Result.success(Unit)
+            Result.Success(Unit)
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.Error(e.toString())
         }
     }
 }
