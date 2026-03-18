@@ -21,6 +21,11 @@ class AuthViewModel @Inject constructor(
 
     val authState = _authState.asStateFlow()
 
+    init {
+        checkCurrentUser()
+    }
+
+
     fun login(email: String, password: String) {
 
         viewModelScope.launch {
@@ -42,6 +47,13 @@ class AuthViewModel @Inject constructor(
 
             _authState.value =
                 repository.register(name , email, password)
+        }
+    }
+
+    fun checkCurrentUser() {
+        viewModelScope.launch {
+            _authState.value = Result.Loading // Set loading immediately
+            _authState.value = repository.getCurrentUser()
         }
     }
 

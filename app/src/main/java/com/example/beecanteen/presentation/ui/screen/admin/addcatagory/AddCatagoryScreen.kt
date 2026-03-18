@@ -56,8 +56,8 @@ fun AddCategoryScreen(
     var endTimeDisplay by rememberSaveable { mutableStateOf("") }
 
     // State for controlling our TimePicker Dialog
-    var showTimePicker by remember { mutableStateOf(false) }
-    var isPickingStartTime by remember { mutableStateOf(true) }
+    var showTimePicker by rememberSaveable { mutableStateOf(false) }
+    var isPickingStartTime by rememberSaveable { mutableStateOf(true) }
 
     // Material 3 TimePicker State (is24Hour = false gives us the AM/PM dial!)
     val timePickerState = rememberTimePickerState(

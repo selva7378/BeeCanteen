@@ -3,7 +3,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -27,11 +26,11 @@ import kotlinx.serialization.Serializable
 // Bottom Nav Routes (Inside Main Flow)
 @Serializable object UserRoute
 @Serializable object AdminRoute
-
 @Serializable object AddCategoryRoute
 
 @Serializable
 data class AdminPollDetailRoute(val categoryId: String)
+
 @Composable
 fun AppNavGraph(
     authViewModel: AuthViewModel = hiltViewModel(),
@@ -40,76 +39,71 @@ fun AppNavGraph(
     val rootNavController = rememberNavController()
     val authState by authViewModel.authState.collectAsState()
 
-    LaunchedEffect(Unit) {
-        authViewModel.getCurrentUser()
-    }
-
-    if (authState is Result.Loading) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator() // Or a custom splash screen logo
+    when (val state = authState) {
+        null, is Result.Loading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
         }
-        return // Do not render the NavHost yet
-    }
+        else -> {
+            NavHost(
+                navController = rootNavController,
+                startDestination = if (state is Result.Success) MainFlowRoute else LoginRoute,
+                modifier = modifier
+            ) {
 
-    NavHost(
-        navController = rootNavController,
-        startDestination = if (authState is Result.Success) MainFlowRoute else LoginRoute,
-//        startDestination = LoginRoute,
-        modifier = Modifier
-    ) {
-
-        // 1. Login Destination
-        composable<LoginRoute> {
-            LoginScreen(
-                authViewModel = authViewModel,
-                onLoginSuccess = {
-                    rootNavController.navigate(MainFlowRoute) {
-                        popUpTo(LoginRoute) { inclusive = true }
-                    }
-                },
-                onNavigateToRegister = {
-                    rootNavController.navigate(RegisterRoute)
-                }
-            )
-        }
-
-        composable<RegisterRoute> {
-            RegisterScreen(
-                authViewModel = authViewModel,
-                onRegisterSuccess = {
-                    rootNavController.navigate(MainFlowRoute) {
-                        popUpTo(LoginRoute) { inclusive = true }
-                    }
-                },
-                onNavigateToLogin = {
-                    rootNavController.popBackStack()
-                }
-            )
-        }
-
-        composable<MainFlowRoute> {
-            val currentUser = (authState as? Result.Success)?.data
-            val isAdmin = currentUser?.role?.trim() == "admin"
-
-            Log.i("AppNavGraph", "role ${currentUser?.role}")
-
-            MainScreen(
-                name = currentUser?.name ?: "user",
-                isAdmin = isAdmin,
-                onLogout = {
-                    authViewModel.logout()
-
-                    rootNavController.navigate(LoginRoute) {
-                        popUpTo(MainFlowRoute) {
-                            inclusive = true
+                composable<LoginRoute> {
+                    LoginScreen(
+                        authViewModel = authViewModel,
+                        onLoginSuccess = {
+                            rootNavController.navigate(MainFlowRoute) {
+                                popUpTo(LoginRoute) { inclusive = true }
+                            }
+                        },
+                        onNavigateToRegister = {
+                            rootNavController.navigate(RegisterRoute)
                         }
-                        launchSingleTop = true
-                    }
+                    )
                 }
-            )
+
+                composable<RegisterRoute> {
+                    RegisterScreen(
+                        authViewModel = authViewModel,
+                        onRegisterSuccess = {
+                            rootNavController.navigate(MainFlowRoute) {
+                                popUpTo(LoginRoute) { inclusive = true }
+                            }
+                        },
+                        onNavigateToLogin = {
+                            rootNavController.popBackStack()
+                        }
+                    )
+                }
+
+                composable<MainFlowRoute> {
+                    val currentUser = (state as? Result.Success)?.data
+                    val isAdmin = currentUser?.role?.trim() == "admin"
+
+                    Log.i("AppNavGraph", "role ${currentUser?.role}")
+
+                    MainScreen(
+                        name = currentUser?.name ?: "user",
+                        isAdmin = isAdmin,
+                        onLogout = {
+                            authViewModel.logout()
+                            rootNavController.navigate(LoginRoute) {
+                                popUpTo(MainFlowRoute) {
+                                    inclusive = true
+                                }
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                }
+            }
         }
     }
 }
