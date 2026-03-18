@@ -5,7 +5,7 @@ import com.example.beecanteen.domain.model.admin.CategoryDto
 import com.example.beecanteen.domain.model.admin.OptionDto
 import com.example.beecanteen.domain.model.user.VoteDto
 import com.example.beecanteen.domain.repository.admin.AdminRepository
-chanimport com.example.beecanteen.domain.repository.authentication.Result
+import com.example.beecanteen.domain.repository.authentication.Result
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
