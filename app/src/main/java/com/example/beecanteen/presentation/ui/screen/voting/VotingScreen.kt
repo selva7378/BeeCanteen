@@ -1,5 +1,15 @@
 package com.example.beecanteen.presentation.ui.screen.voting
 
+import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -7,45 +17,68 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.beecanteen.domain.model.CategoryPoll
 import com.example.beecanteen.domain.model.admin.CategoryDto
 import com.example.beecanteen.domain.model.admin.OptionDto
-import com.example.beecanteen.presentation.ui.theme.BeeCanteenTheme
-import java.util.Locale
 import com.example.beecanteen.domain.repository.authentication.Result
+import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VotingScreen(
     name: String,
     viewModel: VotingViewModel = hiltViewModel()
 ) {
     val pollsState by viewModel.pollsState.collectAsState()
+    val customAlarms by viewModel.customAlarms.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Text(
-            text = "Welcome, $name! Today is ${viewModel.todayFormatted()}",
-            modifier = Modifier.padding(16.dp),
-            style = MaterialTheme.typography.titleMedium
-        )
+    val context = LocalContext.current
+    val activity = context as? Activity
 
-        when (val result = pollsState) {
-            null -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+    var showAlarmDialog by remember { mutableStateOf(false) }
+    var showRationaleDialog by remember { mutableStateOf(false) }
+
+    // 🔥 Permission Launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            showAlarmDialog = true
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+
+        Column(modifier = Modifier.fillMaxSize()) {
+
+            Text(
+                text = "Welcome, $name! Today is ${viewModel.todayFormatted()}",
+                modifier = Modifier.padding(16.dp),
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            when (val result = pollsState) {
+                null -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
                 }
-            }
-            else -> {
-                if (result is Result.Success) {
+
+                is Result.Success -> {
                     VotingScreenContent(
                         polls = result.data ?: emptyList(),
                         onOptionSelected = { categoryId, optionId ->
@@ -55,41 +88,217 @@ fun VotingScreen(
                             viewModel.revokeVote(categoryId)
                         }
                     )
-                } else {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                }
+
+                else -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
-                            text = "Error loading polls: Ceck your internet",
+                            text = "Error loading polls: Check your internet",
                             color = MaterialTheme.colorScheme.error
                         )
                     }
                 }
             }
         }
+
+        // 🔥 FAB
+        FloatingActionButton(
+            onClick = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+                    val isGranted = ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) == PackageManager.PERMISSION_GRANTED
+
+                    if (isGranted) {
+                        showAlarmDialog = true
+                    } else {
+
+                        val shouldShowRationale = activity?.let {
+                            ActivityCompat.shouldShowRequestPermissionRationale(
+                                it,
+                                Manifest.permission.POST_NOTIFICATIONS
+                            )
+                        } == true
+
+                        if (shouldShowRationale) {
+                            // Denied once
+                            showRationaleDialog = true
+                        } else {
+                            // First time OR permanently denied
+
+                            val isPermanentlyDenied =
+                                !shouldShowRationale &&
+                                        ContextCompat.checkSelfPermission(
+                                            context,
+                                            Manifest.permission.POST_NOTIFICATIONS
+                                        ) != PackageManager.PERMISSION_GRANTED
+
+                            if (isPermanentlyDenied) {
+                                openAppSettings(context) // 🔥 KEY FIX
+                            } else {
+                                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
+                        }
+                    }
+
+                } else {
+                    showAlarmDialog = true
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Notifications,
+                contentDescription = "Schedule daily reminder notification"
+            )
+        }
+    }
+
+    // 🔥 Rationale Dialog → Goes to Settings
+    if (showRationaleDialog) {
+        AlertDialog(
+            onDismissRequest = { showRationaleDialog = false },
+            title = { Text("Notification Permission Required") },
+            text = {
+                Text("To enable reminders, please allow notification permission in settings.")
+            },
+            confirmButton = {
+                Button(onClick = {
+                    showRationaleDialog = false
+                    openAppSettings(context) // 🔥 GO TO SETTINGS
+                }) {
+                    Text("Open Settings")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRationaleDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    if (showAlarmDialog) {
+        AlarmSettingsDialog(
+            alarms = customAlarms,
+            onDismiss = { showAlarmDialog = false },
+            onAddAlarm = { hour, minute ->
+                viewModel.addCustomAlarm(hour, minute)
+            },
+            onDeleteAlarm = { time ->
+                viewModel.removeCustomAlarm(time)
+            }
+        )
+    }
+}
+
+/* ---------------- SETTINGS NAVIGATION ---------------- */
+
+fun openAppSettings(context: Context) {
+    val intent = Intent(
+        Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+    ).apply {
+        data = Uri.fromParts("package", context.packageName, null)
+    }
+    context.startActivity(intent)
+}
+
+/* ---------------- UI ---------------- */
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AlarmSettingsDialog(
+    alarms: List<String>,
+    onDismiss: () -> Unit,
+    onAddAlarm: (Int, Int) -> Unit,
+    onDeleteAlarm: (String) -> Unit
+) {
+    var showTimePicker by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Daily Reminders") },
+        text = {
+            Column {
+                if (alarms.isEmpty()) {
+                    Text("No reminders set.")
+                } else {
+                    LazyColumn(modifier = Modifier.heightIn(max = 200.dp)) {
+                        items(alarms) { time ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(time)
+                                IconButton(onClick = { onDeleteAlarm(time) }) {
+                                    Icon(Icons.Filled.Delete, contentDescription = "Delete")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = { showTimePicker = true }) {
+                Text("Add Reminder")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close")
+            }
+        }
+    )
+
+    if (showTimePicker) {
+        val timePickerState = rememberTimePickerState()
+
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            title = { Text("Select Time") },
+            text = { TimePicker(state = timePickerState) },
+            confirmButton = {
+                Button(onClick = {
+                    onAddAlarm(timePickerState.hour, timePickerState.minute)
+                    showTimePicker = false
+                }) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
 @Composable
 fun VotingScreenContent(
     polls: List<CategoryPoll>,
-    onOptionSelected: (String, String) -> Unit, // categoryId, optionId
-    onRevokeClicked: (String) -> Unit // categoryId
+    onOptionSelected: (String, String) -> Unit,
+    onRevokeClicked: (String) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(polls) { poll ->
             VotingPollCard(
                 poll = poll,
-                // Passing the Firestore-derived state directly
                 selectedOptionId = poll.currentVotedOptionId,
-                onOptionSelected = { selectedOptionId ->
-                    onOptionSelected(poll.category.id, selectedOptionId)
-                },
-                onRevokeClicked = {
-                    onRevokeClicked(poll.category.id)
-                }
+                onOptionSelected = { onOptionSelected(poll.category.id, it) },
+                onRevokeClicked = { onRevokeClicked(poll.category.id) }
             )
         }
     }
@@ -102,103 +311,49 @@ fun VotingPollCard(
     onOptionSelected: (String) -> Unit,
     onRevokeClicked: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            // Top Row: Category Name + Revoke Button
+    Card(modifier = Modifier.fillMaxWidth()) {
+
+        Column(modifier = Modifier.padding(16.dp)) {
+
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = poll.category.title,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
+                Text(poll.category.title, fontWeight = FontWeight.Bold)
 
                 if (selectedOptionId != null) {
                     TextButton(onClick = onRevokeClicked) {
-                        Text(
-                            text = "Revoke",
-                            color = MaterialTheme.colorScheme.error,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Text("Revoke")
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(8.dp))
 
-            // Start and End Time Pill
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(50))
-                    .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f))
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
-            ) {
-                Text(
-                    text = "${formatMillisToTime(poll.category.startTime)} - ${formatMillisToTime(poll.category.endTime)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Options List using RadioButtons
             poll.options.forEach { option ->
                 Row(
-                    modifier = Modifier
+                    Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
                         .clickable { onOptionSelected(option.id) }
-                        .padding(vertical = 4.dp, horizontal = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(8.dp)
                 ) {
                     RadioButton(
-                        selected = (option.id == selectedOptionId),
-                        onClick = { onOptionSelected(option.id) },
-                        colors = RadioButtonDefaults.colors(
-                            selectedColor = MaterialTheme.colorScheme.primary
-                        )
+                        selected = option.id == selectedOptionId,
+                        onClick = { onOptionSelected(option.id) }
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = option.name, style = MaterialTheme.typography.bodyLarge)
+                    Spacer(Modifier.width(8.dp))
+                    Text(option.name)
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
 
-            // Real-time Total Votes Footer
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.ThumbUp,
-                    contentDescription = "Total Votes",
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.outline
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "${poll.category.totalVotes} votes",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.outline
-                )
-            }
+            Text("${poll.category.totalVotes} votes")
         }
     }
 }
+
+/* ---------------- UTIL ---------------- */
 
 fun formatMillisToTime(millis: Long): String {
     val totalMinutes = millis / (1000 * 60)
@@ -209,38 +364,4 @@ fun formatMillisToTime(millis: Long): String {
     val displayHour = if (hours == 0) 12 else if (hours > 12) hours - 12 else hours
 
     return String.format(Locale.getDefault(), "%d:%02d %s", displayHour, minutes, amPm)
-}
-
-@Preview(showBackground = true)
-@Composable
-fun VotingScreenPreview() {
-    val dummyPolls = listOf(
-        CategoryPoll(
-            category = CategoryDto(id = "1", title = "Daily Beverages", startTime = 48600000L, endTime = 54600000L, totalVotes = 10),
-            options = listOf(OptionDto(id = "opt1", name = "Tea"), OptionDto(id = "opt2", name = "Coffee")),
-            currentVotedOptionId = "opt2"
-        ),
-        CategoryPoll(
-            category = CategoryDto(id = "2", title = "Lunch Options", startTime = 36000000L, endTime = 41400000L, totalVotes = 45),
-            options = listOf(OptionDto(id = "opt3", name = "Pizza"), OptionDto(id = "opt4", name = "Burger")),
-            currentVotedOptionId = null
-        )
-    )
-
-    BeeCanteenTheme {
-        Surface(color = MaterialTheme.colorScheme.background) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Text(
-                    text = "Welcome, User! Today is January 1",
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.titleMedium
-                )
-                VotingScreenContent(
-                    polls = dummyPolls,
-                    onOptionSelected = { _, _ -> },
-                    onRevokeClicked = {}
-                )
-            }
-        }
-    }
 }

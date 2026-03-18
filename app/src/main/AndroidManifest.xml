@@ -4,6 +4,9 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
     <application
         android:name=".BeeCanteenApplication"
         android:allowBackup="true"
@@ -34,6 +37,9 @@
                     android:host="beecanteen-e5482.firebaseapp.com" />
             </intent-filter>
         </activity>
+        <receiver
+            android:name=".receiver.PollNotificationReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>
