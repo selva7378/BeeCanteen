@@ -9,6 +9,7 @@ import com.example.beecanteen.domain.repository.voting.VotingRepository
 import com.example.beecanteen.domain.repository.authentication.Result
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,18 +29,32 @@ import javax.inject.Inject
 class VotingViewModel @Inject constructor(
     private val repository: VotingRepository,
     private val firebaseAuth: FirebaseAuth,
-    private val userAlarmManager: UserAlarmManager // <-- INJECTED HERE
+    private val userAlarmManager: UserAlarmManager
 ) : ViewModel() {
 
     private val _pollsState = MutableStateFlow<Result<List<CategoryPoll>>?>(null)
     val pollsState: StateFlow<Result<List<CategoryPoll>>?> = _pollsState.asStateFlow()
 
-    // ✨ Convert the DataStore Flow instantly into a StateFlow for the UI!
+    // ✨ NEW: State to track if the UI is currently refreshing
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
+    // ✨ NEW: Track the job so we can cancel and restart the listener
+    private var pollJob: Job? = null
+
     val customAlarms: StateFlow<List<String>> = userAlarmManager.savedAlarmsFlow
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     init {
-        viewModelScope.launch {
+        fetchPolls()
+    }
+
+    // ✨ NEW: Extracted into its own function so Pull-to-Refresh can trigger it
+    fun fetchPolls() {
+        pollJob?.cancel() // Stop the old listener
+        pollJob = viewModelScope.launch {
+            _isRefreshing.value = true
+
             repository.getRealTimePolls().collect { result ->
                 val currentMillis = getCurrentMillisSinceMidnight()
                 val filteredResult = when (result) {
@@ -52,12 +67,13 @@ class VotingViewModel @Inject constructor(
                     is Result.Error -> result
                     is Result.Loading -> result
                 }
+
                 _pollsState.value = filteredResult
+                _isRefreshing.value = false // Turn off the loading spinner when data arrives!
             }
         }
     }
 
-    // New Alarm Methods
     fun addCustomAlarm(hour: Int, minute: Int) {
         viewModelScope.launch {
             userAlarmManager.scheduleAlarm(hour, minute)
@@ -70,7 +86,6 @@ class VotingViewModel @Inject constructor(
         }
     }
 
-    // Voting methods remain exactly the same
     fun castVote(categoryId: String, optionId: String) {
         val userId = firebaseAuth.currentUser?.uid ?: return
         viewModelScope.launch {

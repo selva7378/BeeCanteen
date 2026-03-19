@@ -3,6 +3,7 @@ package com.example.beecanteen.presentation.ui.screen.voting
 import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -10,21 +11,18 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -32,8 +30,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.beecanteen.domain.model.CategoryPoll
-import com.example.beecanteen.domain.model.admin.CategoryDto
-import com.example.beecanteen.domain.model.admin.OptionDto
 import com.example.beecanteen.domain.repository.authentication.Result
 import java.util.Locale
 
@@ -45,6 +41,7 @@ fun VotingScreen(
 ) {
     val pollsState by viewModel.pollsState.collectAsState()
     val customAlarms by viewModel.customAlarms.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState() // ✨ Observe refreshing state
 
     val context = LocalContext.current
     val activity = context as? Activity
@@ -52,7 +49,6 @@ fun VotingScreen(
     var showAlarmDialog by remember { mutableStateOf(false) }
     var showRationaleDialog by remember { mutableStateOf(false) }
 
-    // 🔥 Permission Launcher
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -71,37 +67,57 @@ fun VotingScreen(
                 style = MaterialTheme.typography.titleMedium
             )
 
-            when (val result = pollsState) {
-                null -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                }
-
-                is Result.Success -> {
-                    VotingScreenContent(
-                        polls = result.data ?: emptyList(),
-                        onOptionSelected = { categoryId, optionId ->
-                            viewModel.castVote(categoryId, optionId)
-                        },
-                        onRevokeClicked = { categoryId ->
-                            viewModel.revokeVote(categoryId)
+            // ✨ The PullToRefresh wrapper
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { viewModel.fetchPolls() },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                when (val result = pollsState) {
+                    null, Result.Loading -> {
+                        if (!isRefreshing) {
+                            // Wrapped in LazyColumn so pull-to-refresh works even when loading
+                            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                                item {
+                                    Box(Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
+                                        CircularProgressIndicator()
+                                    }
+                                }
+                            }
                         }
-                    )
-                }
+                    }
 
-                else -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "Error loading polls: Check your internet",
-                            color = MaterialTheme.colorScheme.error
+                    is Result.Success -> {
+                        VotingScreenContent(
+                            polls = result.data,
+                            onOptionSelected = { categoryId, optionId ->
+                                viewModel.castVote(categoryId, optionId)
+                            },
+                            onRevokeClicked = { categoryId ->
+                                viewModel.revokeVote(categoryId)
+                            }
                         )
+                    }
+
+                    is Result.Error -> {
+                        // Wrapped in LazyColumn so user can swipe down to try again if it fails
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            item {
+                                Box(Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
+                                    Text(
+                                        text = "Error loading polls: ${result.message}",
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
 
-        // 🔥 FAB
+        // FAB
+        // FAB
         FloatingActionButton(
             onClick = {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -114,7 +130,6 @@ fun VotingScreen(
                     if (isGranted) {
                         showAlarmDialog = true
                     } else {
-
                         val shouldShowRationale = activity?.let {
                             ActivityCompat.shouldShowRequestPermissionRationale(
                                 it,
@@ -123,27 +138,16 @@ fun VotingScreen(
                         } == true
 
                         if (shouldShowRationale) {
-                            // Denied once
+                            // User denied previously, show our friendly explanation
                             showRationaleDialog = true
                         } else {
-                            // First time OR permanently denied
-
-                            val isPermanentlyDenied =
-                                !shouldShowRationale &&
-                                        ContextCompat.checkSelfPermission(
-                                            context,
-                                            Manifest.permission.POST_NOTIFICATIONS
-                                        ) != PackageManager.PERMISSION_GRANTED
-
-                            if (isPermanentlyDenied) {
-                                openAppSettings(context) // 🔥 KEY FIX
-                            } else {
-                                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            }
+                            // ✨ FIRST TIME ASKING! Launch the system prompt.
+                            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                         }
                     }
 
                 } else {
+                    // Android 12 or below
                     showAlarmDialog = true
                 }
             },
@@ -159,7 +163,7 @@ fun VotingScreen(
         }
     }
 
-    // 🔥 Rationale Dialog → Goes to Settings
+    // Rationale Dialog -> Goes to Settings
     if (showRationaleDialog) {
         AlertDialog(
             onDismissRequest = { showRationaleDialog = false },
@@ -170,7 +174,7 @@ fun VotingScreen(
             confirmButton = {
                 Button(onClick = {
                     showRationaleDialog = false
-                    openAppSettings(context) // 🔥 GO TO SETTINGS
+                    openAppSettings(context)
                 }) {
                     Text("Open Settings")
                 }
@@ -353,7 +357,6 @@ fun VotingPollCard(
     }
 }
 
-/* ---------------- UTIL ---------------- */
 
 fun formatMillisToTime(millis: Long): String {
     val totalMinutes = millis / (1000 * 60)
@@ -364,4 +367,13 @@ fun formatMillisToTime(millis: Long): String {
     val displayHour = if (hours == 0) 12 else if (hours > 12) hours - 12 else hours
 
     return String.format(Locale.getDefault(), "%d:%02d %s", displayHour, minutes, amPm)
+}
+
+fun Context.findActivity(): Activity? {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is Activity) return context
+        context = context.baseContext
+    }
+    return null
 }
