@@ -129,7 +129,7 @@ fun MainScreen(
     {
         NavigationSuiteScaffold(
             layoutType = layoutType,
-            modifier = Modifier.fillMaxSize().padding(it),
+            modifier = Modifier.fillMaxSize().padding(top = it.calculateTopPadding()),
             navigationSuiteItems = {
                 item(
                     selected = currentDestination?.hierarchy?.any { it.hasRoute<UserRoute>() } == true,
